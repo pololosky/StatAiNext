@@ -1,0 +1,308 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== GESTION DES UTILISATEURS ====================
+// Le socle de l'authentification. Chaque personne physique ou entité (Etablissement)
+// commence par une entrée dans ce modèle.
+
+enum Role {
+  ADMIN
+  ETABLISSEMENT
+  ETUDIANT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role
+  nom       String
+  prenom    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Un User peut être soit un établissement, soit un étudiant (Relation 1-to-1)
+  etablissement Etablissement?
+  etudiant      Etudiant?
+
+  @@index([email])
+}
+
+// ==================== ÉTABLISSEMENT ====================
+// Représente l'entité administrative. Elle possède des classes, des profs et des élèves.
+
+model Etablissement {
+  id        String   @id @default(cuid())
+  nom       String
+  adresse   String?
+  telephone String?
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Liaison stricte avec User : Si l'utilisateur est supprimé, l'entité établissement disparaît.
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations parentales
+  classes   Classe[]
+  annees    AnneeScolaire[]
+  matieres  Matiere[]
+  etudiants Etudiant[]
+
+  @@index([userId])
+}
+
+// ==================== ANNÉE SCOLAIRE ====================
+// Permet de segmenter les données par année (ex: 2023-2024).
+
+model AnneeScolaire {
+  id        String   @id @default(cuid())
+  libelle   String   // ex: "2023-2024"
+  dateDebut DateTime
+  dateFin   DateTime
+  active    Boolean  @default(false) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  
+  periodes Periode[]
+
+  @@index([etablissementId])
+  @@index([active])
+}
+
+// ==================== CLASSE ====================
+// Groupe d'étudiants. Un étudiant appartient à une seule classe par établissement.
+
+model Classe {
+  id          String   @id @default(cuid())
+  nom         String   // ex: "6ème A"
+  niveau      String   // ex: "6ème"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  
+  etudiants Etudiant[]
+  matieres  Matiere[]
+  periodes  Periode[]
+
+  // Empêche d'avoir deux classes avec le même nom dans le même établissement
+  @@unique([etablissementId, nom])
+  @@index([etablissementId])
+}
+
+// ==================== PÉRIODE ====================
+// Découpage du temps (Trimestre/Semestre) rattaché à une année et une classe.
+
+enum TypePeriode {
+  TRIMESTRE
+  SEMESTRE
+}
+
+model Periode {
+  id          String      @id @default(cuid())
+  numero      Int         // 1, 2, 3
+  typePeriode TypePeriode
+  dateDebut   DateTime
+  dateFin     DateTime
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  anneeId String
+  annee   AnneeScolaire @relation(fields: [anneeId], references: [id], onDelete: Cascade)
+  
+  classeId String
+  classe   Classe @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  
+  notes        Note[]
+  appreciations Appreciation[]
+
+  @@unique([anneeId, classeId, numero])
+  @@index([anneeId])
+  @@index([classeId])
+}
+
+// ==================== MATIÈRE ====================
+// Définit ce qui est enseigné. Catégorisé pour permettre l'analyse IA par pôle.
+
+enum CategorieMatiere {
+  SCIENCE
+  LITTERATURE
+  ART_SPORT
+}
+
+model Matiere {
+  id          String           @id @default(cuid())
+  nom         String           
+  code        String?          
+  categorie   CategorieMatiere
+  coefficient Float            @default(1.0)
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  
+  classeId String
+  classe   Classe @relation(fields: [classeId], references: [id], onDelete: Cascade)
+  
+  notes Note[]
+
+  @@unique([etablissementId, classeId, nom])
+  @@index([etablissementId])
+  @@index([classeId])
+  @@index([categorie])
+}
+
+// ==================== ÉTUDIANT ====================
+// Le profil riche de l'élève. Contient les données perso + les "envies" pour l'IA.
+
+model Etudiant {
+  id           String    @id @default(cuid())
+  matricule    String    @unique
+  nom          String
+  prenom       String
+  dateNaissance DateTime?
+  lieuNaissance String?
+  sexe         String?
+  adresse      String?
+  telephone    String?
+  email        String?   @unique    
+  
+  // Champ clé pour l'IA : Aspirations professionnelles, centres d'intérêt.
+  envies       String?   @db.Text // Format recommandé: JSON String
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  etablissementId String
+  etablissement   Etablissement @relation(fields: [etablissementId], references: [id], onDelete: Cascade)
+  
+  classeId String
+  classe   Classe @relation(fields: [classeId], references: [id], onDelete: Cascade)
+
+  notes           Note[]
+  appreciations   Appreciation[]
+  conversationsIA ConversationIA[]
+  statistiques    StatistiqueEtudiant[]
+
+  @@index([userId])
+  @@index([etablissementId])
+  @@index([classeId])
+  @@index([matricule])
+}
+
+// ==================== NOTE ====================
+// Donnée brute de performance.
+
+model Note {
+  id        String   @id @default(cuid())
+  valeur    Float    
+  surTotal  Float    @default(20.0)
+  date      DateTime @default(now())
+  commentaire String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  etudiantId String
+  etudiant   Etudiant @relation(fields: [etudiantId], references: [id], onDelete: Cascade)
+  
+  matiereId String
+  matiere   Matiere @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+  
+  periodeId String
+  periode   Periode @relation(fields: [periodeId], references: [id], onDelete: Cascade)
+
+  @@index([etudiantId])
+  @@index([matiereId])
+  @@index([periodeId])
+}
+
+// ==================== APPRÉCIATION ====================
+// Donnée qualitative cruciale pour l'analyse de sentiment par l'IA.
+
+model Appreciation {
+  id          String   @id @default(cuid())
+  contenu     String   @db.Text
+  type        String?  // ex: "Comportement", "Progrès"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  etudiantId String
+  etudiant   Etudiant @relation(fields: [etudiantId], references: [id], onDelete: Cascade)
+  
+  periodeId String
+  periode   Periode @relation(fields: [periodeId], references: [id], onDelete: Cascade)
+
+  @@index([etudiantId])
+  @@index([periodeId])
+}
+
+// ==================== STATISTIQUES ====================
+// Résultats calculés (souvent par un worker ou l'IA) pour un affichage rapide.
+
+model StatistiqueEtudiant {
+  id               String   @id @default(cuid())
+  moyenneGenerale  Float
+  moyenneScience   Float?
+  moyenneLitterature Float?
+  moyenneArtSport  Float?
+  
+  matieresFortes   String?  // JSON Array: [{id, nom, moyenne}]
+  matieresFaibles  String?  // JSON Array
+  
+  rangClasse       Int?     
+  totalEleves      Int?     
+
+  periodeId        String?
+  anneeId          String?    
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  etudiantId String
+  etudiant   Etudiant @relation(fields: [etudiantId], references: [id], onDelete: Cascade)
+
+  @@index([etudiantId])
+  @@index([periodeId])
+  @@index([anneeId])
+}
+
+// ==================== IA ASSISTANT ====================
+// Historique des échanges entre l'élève et l'IA de StatAi.
+
+model ConversationIA {
+  id        String   @id @default(cuid())
+  titre     String?  
+  messages  String   @db.Text // JSON String: [{role: "user", content: "..."}, {role: "assistant", ...}]
+  actif     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  etudiantId String
+  etudiant   Etudiant @relation(fields: [etudiantId], references: [id], onDelete: Cascade)
+
+  @@index([etudiantId])
+  @@index([actif])
+}
