@@ -5,31 +5,34 @@ import {
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
+  PolarRadiusAxis,
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { subject: "Maths", A: 20 },
-  { subject: "Physique", A: 65 },
-  { subject: "Français", A: 75 },
-  { subject: "Anglais", A: 70 },
-  { subject: "Histoire", A: 60 },
-  { subject: "Philo", A: 72 },
-];
+interface SkillsRadarProps {
+  data: {
+    subject: string;
+    A: number;
+    fullMark: number;
+  }[];
+}
 
-export default function SkillsRadar() {
+export default function SkillsRadar({ data }: SkillsRadarProps) {
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <RadarChart data={data}>
-        <PolarGrid />
-        <PolarAngleAxis dataKey="subject" />
-
-        {/* Radar bleu */}
+    <ResponsiveContainer width="100%" height="100%">
+      <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
+        <PolarGrid stroke="#e2e8f0" />
+        <PolarAngleAxis
+          dataKey="subject"
+          tick={{ fill: "#64748b", fontSize: 12 }}
+        />
+        <PolarRadiusAxis angle={30} domain={[0, 20]} />
         <Radar
+          name="Étudiant"
           dataKey="A"
-          stroke="#1E3A8A"      // contour bleu foncé
-          fill="#3B82F6"        // remplissage bleu clair
-          fillOpacity={0.6}     // transparence
+          stroke="#2563eb"
+          fill="#3b82f6"
+          fillOpacity={0.6}
         />
       </RadarChart>
     </ResponsiveContainer>

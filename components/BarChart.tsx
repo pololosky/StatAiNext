@@ -5,39 +5,52 @@ import {
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  defs,
 } from "recharts";
 
-const data = [
-  { month: "Sept", value: 14 },
-  { month: "Oct", value: 15 },
-  { month: "Nov", value: 13 },
-  { month: "Dec", value: 14 },
-  { month: "Jan", value: 15 },
-];
+interface AverageBarChartProps {
+  data: {
+    date: string;
+    note: number;
+    matiere: string;
+  }[];
+}
 
-export default function AverageBarChart() {
+export default function AverageBarChart({ data }: AverageBarChartProps) {
   return (
-    <ResponsiveContainer width="100%" height={250}>
-      <BarChart data={data}>
-        {/* Définition du gradient */}
-        <defs>
-          <linearGradient id="bleuGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1E3A8A" stopOpacity={1} />
-            <stop offset="100%" stopColor="#3B82F6" stopOpacity={1} />
-          </linearGradient>
-        </defs>
-
-        <XAxis dataKey="month" />
-        <YAxis />
-        <Tooltip />
-        <Bar
-          dataKey="value"
-          fill="url(#bleuGradient)"  // Utilise l'id défini ci-dessus
-          radius={[8, 8, 0, 0]}
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        data={data}
+        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+      >
+        <CartesianGrid
+          strokeDasharray="3 3"
+          vertical={false}
+          stroke="#f1f5f9"
         />
+        <XAxis
+          dataKey="date"
+          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <YAxis
+          domain={[0, 20]}
+          tick={{ fontSize: 11, fill: "#94a3b8" }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{
+            borderRadius: "12px",
+            border: "none",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          }}
+          cursor={{ fill: "#f8fafc" }}
+        />
+        <Bar dataKey="note" fill="#2563eb" radius={[4, 4, 0, 0]} barSize={30} />
       </BarChart>
     </ResponsiveContainer>
   );
