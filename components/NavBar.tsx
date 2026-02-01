@@ -11,6 +11,9 @@ async function NavBar() {
         <h1 className="text-3xl font-semibold italic text-blue-600">StatAi</h1>
       </div>
       <div>
+        <Link href={"/etablissement"}>Etablissement</Link>
+      </div>
+      <div>
         {session ? (
           <div className="flex items-center gap-6">
             <span className="text-slate-700 font-medium">

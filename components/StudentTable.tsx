@@ -1,144 +1,151 @@
-import { Eye, Pencil, TrendingDown, TrendingUp } from "lucide-react";
+"use client";
 
-type Student = {
-    initials: string;
-    name: string;
-    className: string;
-    average: number;
-    trend: "up" | "down" | "stable";
-    updateAt: string;
-    alerts: number;
-};
+import { useEffect, useState, useMemo } from "react";
+import { Eye, Pencil, TrendingDown, TrendingUp, Loader2, UserX, AlertTriangle } from "lucide-react";
 
+interface StudentTableProps {
+  searchTerm: string;
+  classeId: string;
+}
 
-const students= [
-    {
-        initials: "MD",
-        name: "Marie Dupont",
-        class: "Terminale S",
-        average: 15.5,
-        trend: "up",
-        updateAt: "10/12/2024",
-        alerts:0,
-    },
+export default function StudentTable({ searchTerm, classeId }: StudentTableProps) {
+  const [students, setStudents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    {
-        initials: "TM",
-        name: "Thomas",
-        class: "Terminale S",
-        average: 13.2,
-        trend: "down",
-        updateAt: "09/12/2024",
-        alerts:1,
-    },
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true);
+      setErrorMessage(null);
+      
+      try {
+        const res = await fetch("/api/etablissement/etudiants");
 
-    {
-        initials: "SB",
-        name: "Sophie Bernard",
-        class: "Première L",
-        average: 16.8,
-        trend: "up",
-        updateAt: "10/12/2024",
-        alerts: 0,
-    },
+        // Vérification du statut de la réponse
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP: ${res.status}`);
+        }
 
-    {
-        initials: "LD",
-        name: "Lucas Dubois",
-        class: "Terminale ES",
-        average: 12.1,
-        trend: "down",
-        updateAt: "08/12/2024",
-        alerts: 2,
-    },
+        // Vérification du type de contenu (doit être JSON)
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("L'API n'a pas renvoyé de JSON valide. Vérifiez votre session.");
+        }
 
-    {
-        initials: "ER",
-        name: "Emma Rousseau",
-        class: "Première S",
-        average: 14.9,
-        trend: "Stable",
-        updateAt: "10/12/2024",
-        alerts: 0,
-    }
-    
-];
+        const data = await res.json();
+        setStudents(Array.isArray(data) ? data : []);
+      } catch (error: any) {
+        console.error("Erreur StudentTable:", error);
+        setErrorMessage(error.message || "Une erreur inconnue est survenue");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export default function StudentTable(){
-    return (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden mt-6">
-            <table className="w-full text-left">
-                <thead className="bg-gray-100 border-b">
-                    <tr className="text-gray-600 text-sm">
-                        <th className="text-gray-600 px-4 py-6">Nom</th>
-                        <th>Classe</th>
-                        <th>Moyenne</th>
-                        <th>Tendance</th>
-                        <th>Dernière</th>
-                        <th>Alertes</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
+    fetchStudents();
+  }, []);
 
-                <tbody>
-                    {
-                        students.map((s,index)=>(
-                            <tr key={index} className="border-b last:border-none hover:bg-gray-50">
-                                {/*Nom*/}
-                                <td className="p-4 flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">{s.initials}</div>
-                                    <span className="font-medium">{s.name}</span>
-                                </td>
+  const filteredStudents = useMemo(() => {
+    return students.filter((s) => {
+      const nameMatch = s.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+      const matriculeMatch = s.matricule?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
+      const matchesSearch = nameMatch || matriculeMatch;
+      
+      const matchesClasse = classeId === "all" || s.classeId === classeId;
+      return matchesSearch && matchesClasse;
+    });
+  }, [students, searchTerm, classeId]);
 
-                                {/*class*/}
-                                <td>{s.class}</td>
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center p-20 gap-3">
+      <Loader2 className="animate-spin text-blue-600" size={32} />
+      <p className="text-slate-400 text-sm animate-pulse">Récupération des données...</p>
+    </div>
+  );
 
-                                {/*moyenne*/}
-                                <td className={'font-semibold ${s.average >=14 ? "text-blue-600"}'}> {s.average} / 20</td>
+  if (errorMessage) return (
+    <div className="p-10 text-center flex flex-col items-center gap-3">
+      <AlertTriangle className="text-amber-500" size={40} />
+      <div className="text-slate-600">
+        <p className="font-bold">Impossible de charger les étudiants</p>
+        <p className="text-sm opacity-70">{errorMessage}</p>
+      </div>
+      <button 
+        onClick={() => window.location.reload()}
+        className="mt-2 text-blue-600 font-semibold text-sm hover:underline"
+      >
+        Réessayer
+      </button>
+    </div>
+  );
 
-                                {/*Tendance*/}
-                                <td className="flex items-center gap-1">
-                                    {s.trend=="up" && (
-                                        <>
-                                            <TrendingUp size={16} className="text-green-600"/>
-                                            <span className="text-green-600">Hausse</span> 
-                                        </>
-                                    )}
-                                    {s.trend== "down" &&(
-                                        <>  
-                                            <TrendingUp size={16} className="text-green-600"/>
-                                            <span className="text-green-600">Baisse</span> 
-                                        </>
-                                    )}
-                                    {s.trend== "stable" && (
-                                        <span className="text-gray-500">Stable</span>
-                                    )}
-                                </td>
+  if (filteredStudents.length === 0) return (
+    <div className="p-20 text-center text-slate-400">
+      <UserX className="mx-auto mb-4 opacity-20" size={48} />
+      <p>Aucun étudiant ne correspond à votre recherche.</p>
+    </div>
+  );
 
-                                {/*Dernière MAJ*/}
-                                <td>{s.updateAt}</td>
-
-                                {/*Alertes*/}
-                                <td>
-                                    {s.alerts > 0 ?(
-                                        <span className="bg-orange-100 text-orange-600 px-3 px-1 rounded-full text-sm">{s.alerts}</span>
-                                    ) : (
-                                        <span className="text-gray-400">-</span>
-                                    )}
-                                </td>
-
-                                {/*Action*/}
-                                <td className="flex gap-3 text-blue-600">
-                                    <Eye className="cursor-pointer hover:text-blue-800"/>
-                                    <Pencil className="cursor-pointer hover:text-blue-800"/>
-                                </td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
-
-            </table>
-
-        </div>
-    );
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse">
+        <thead className="bg-slate-50 border-b border-slate-100">
+          <tr className="text-slate-500 text-[11px] uppercase tracking-wider font-bold">
+            <th className="px-6 py-4">Étudiant</th>
+            <th className="px-6 py-4">Classe</th>
+            <th className="px-6 py-4">Moyenne</th>
+            <th className="px-6 py-4 text-center">Tendance</th>
+            <th className="px-6 py-4 text-center">Alertes</th>
+            <th className="px-6 py-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100 font-medium">
+          {filteredStudents.map((s) => (
+            <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group text-sm">
+              <td className="px-6 py-4 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
+                  {s.initials}
+                </div>
+                <span className="text-slate-700 font-semibold truncate max-w-[180px]">{s.name}</span>
+              </td>
+              <td className="px-6 py-4 text-slate-500">{s.class}</td>
+              <td className={`px-6 py-4 font-bold ${s.average < 10 ? "text-rose-500" : "text-slate-900"}`}>
+                {s.average > 0 ? `${s.average.toFixed(2)}` : "—"}
+              </td>
+              <td className="px-6 py-4">
+                <div className="flex justify-center">
+                  {s.trend === "up" ? (
+                    <TrendingUp className="text-emerald-500" size={18} />
+                  ) : s.trend === "down" ? (
+                    <TrendingDown className="text-rose-500" size={18} />
+                  ) : (
+                    <div className="h-[2px] w-4 bg-slate-200" />
+                  )}
+                </div>
+              </td>
+              <td className="px-6 py-4 text-center">
+                {s.alerts > 0 ? (
+                  <span className="bg-orange-100 text-orange-600 px-2 py-0.5 rounded-md text-[10px] font-black">
+                    {s.alerts}
+                  </span>
+                ) : (
+                  <span className="text-slate-200 text-xs">—</span>
+                )}
+              </td>
+              <td className="px-6 py-4 text-right">
+                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button title="Voir le profil" className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-blue-600 hover:shadow-sm border border-transparent hover:border-slate-100">
+                    <Eye size={16} />
+                  </button>
+                  <button title="Modifier" className="p-2 hover:bg-white rounded-lg text-slate-400 hover:text-amber-600 hover:shadow-sm border border-transparent hover:border-slate-100">
+                    <Pencil size={16} />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }

@@ -31,14 +31,14 @@ interface SidebarProps {
 const menuByRole = {
   ADMIN: [
     { href: "/dashboard", icon: LayoutDashboard, label: "Vue Globale" },
-    { href: "/dashboard/etablissements", icon: Users, label: "Établissements" },
+    { href: "/dashboard/admin/etablissements", icon: Users, label: "Établissements" },
     { href: "/dashboard/system", icon: Settings, label: "Système" },
   ],
   ETABLISSEMENT: [
     { href: "/dashboard", icon: LayoutDashboard, label: "Tableau de bord" },
-    { href: "/dashboard/classes", icon: Users, label: "Classes" },
-    { href: "/dashboard/matieres", icon: BookOpen, label: "Matières" },
-    { href: "/dashboard/eleves", icon: GraduationCap, label: "Élèves" },
+    { href: "/dashboard/etablissement/classes", icon: Users, label: "Classes" },
+    { href: "/dashboard/etablissement/matieres", icon: BookOpen, label: "Matières" },
+    { href: "/dashboard/etablissement/eleves", icon: GraduationCap, label: "Élèves" },
     { href: "/dashboard/calendrier", icon: Calendar, label: "Années & Périodes" },
     { href: "/dashboard/settings", icon: Settings, label: "Paramètres" },
   ],
@@ -70,7 +70,7 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Header / Logo StatAi */}
       <div className="p-6">
         <div className="flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <div className="bg-blue-600 p-1.5 rounded-lg">
               <BarChart3 className="text-white w-6 h-6" />
             </div>

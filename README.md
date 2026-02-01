@@ -35,15 +35,22 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-
 # pour lancer la base de donne a votre niveau (PostGresSql)
+
 1- npm install prisma tsx @types/pg --save-dev
 2- npm install @prisma/client @prisma/adapter-pg dotenv pg
 3- creer une base de données postgres du nom de statAi
 4- creer un fichier .env et mettez : DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/statAi?schema=public"
-   en remplacant johndoe->par le nom de votre server; randompassword->par le mot de passe.
-   s'il y'a une erreur verifier que le nom statAi est bien celui que vous avez mis pour la base de donne
+en remplacant johndoe->par le nom de votre server; randompassword->par le mot de passe.
+s'il y'a une erreur verifier que le nom statAi est bien celui que vous avez mis pour la base de donne
 5- npx prisma migrate
 6- npx prisma generate
 7- npx tsx seed.ts
 8- npx prisma studio
+
+# Pour que l'authentification marche
+
+1- npm install next-auth@beta @auth/prisma-adapter bcryptjs
+2- npm install -D @types/bcryptjs
+3- Dans le fichier env : AUTH_SECRET="ton_secret_ici"
+AUTH_URL="http://localhost:3000" (sa ne change pas)
