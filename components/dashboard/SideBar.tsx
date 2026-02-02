@@ -32,21 +32,21 @@ const menuByRole = {
   ADMIN: [
     { href: "/dashboard", icon: LayoutDashboard, label: "Vue Globale" },
     { href: "/dashboard/admin/etablissements", icon: Users, label: "Établissements" },
-    { href: "/dashboard/system", icon: Settings, label: "Système" },
+    { href: "/dashboard/admin/system", icon: Settings, label: "Système" },
   ],
   ETABLISSEMENT: [
     { href: "/dashboard", icon: LayoutDashboard, label: "Tableau de bord" },
     { href: "/dashboard/etablissement/classes", icon: Users, label: "Classes" },
     { href: "/dashboard/etablissement/matieres", icon: BookOpen, label: "Matières" },
-    { href: "/dashboard/etablissement/eleves", icon: GraduationCap, label: "Élèves" },
-    { href: "/dashboard/calendrier", icon: Calendar, label: "Années & Périodes" },
-    { href: "/dashboard/settings", icon: Settings, label: "Paramètres" },
+    // { href: "/dashboard/etablissement/eleves", icon: GraduationCap, label: "Élèves" },
+    { href: "/dashboard/etablissement/calendrier", icon: Calendar, label: "Années & Périodes" },
+    { href: "/dashboard/etablissement/settings", icon: Settings, label: "Paramètres" },
   ],
   ETUDIANT: [
     { href: "/dashboard", icon: LayoutDashboard, label: "Mon Profil" },
-    { href: "/dashboard/notes", icon: ClipboardCheck, label: "Mes Notes" },
-    { href: "/dashboard/analyses", icon: BarChart3, label: "Analyses IA" },
-    { href: "/dashboard/chat", icon: MessageSquare, label: "Assistant StatAi" },
+    { href: "/dashboard/etudiant/notes", icon: ClipboardCheck, label: "Mes Notes" },
+    { href: "/dashboard/etudiant/analyses", icon: BarChart3, label: "Analyses IA" },
+    { href: "/dashboard/etudiant/chat", icon: MessageSquare, label: "Assistant StatAi" },
   ],
 };
 
