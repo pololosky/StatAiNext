@@ -10,9 +10,9 @@ async function NavBar() {
       <div>
         <h1 className="text-3xl font-semibold italic text-blue-600">StatAi</h1>
       </div>
-      <div>
+      {/* <div>
         <Link href={"/etablissement"}>Etablissement</Link>
-      </div>
+      </div> */}
       <div>
         {session ? (
           <div className="flex items-center gap-6">

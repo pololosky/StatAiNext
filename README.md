@@ -46,11 +46,17 @@ s'il y'a une erreur verifier que le nom statAi est bien celui que vous avez mis 
 5- npx prisma migrate
 6- npx prisma generate
 7- npx tsx seed.ts
-8- npx prisma studio
+8- npx prisma studio (pour visualiser la base)
 
 # Pour que l'authentification marche
 
 1- npm install next-auth@beta @auth/prisma-adapter bcryptjs
 2- npm install -D @types/bcryptjs
-3- Dans le fichier env : AUTH_SECRET="ton_secret_ici"
+3- Dans le fichier env : AUTH_SECRET="ton_secret_ici" (node -e "console.log(require('crypto').randomBytes(32).toString('base64'))")
 AUTH_URL="http://localhost:3000" (sa ne change pas)
+
+
+## pour que l'ia marche:
+1- npm install @google/genai
+2- https://aistudio.google.com/ creer un projet et recuperer l'id
+

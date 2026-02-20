@@ -45,7 +45,7 @@ const menuByRole = {
   ETUDIANT: [
     { href: "/dashboard", icon: LayoutDashboard, label: "Mon Profil" },
     { href: "/dashboard/etudiant/notes", icon: ClipboardCheck, label: "Mes Notes" },
-    { href: "/dashboard/etudiant/analyses", icon: BarChart3, label: "Analyses IA" },
+    // { href: "/dashboard/etudiant/analyses", icon: BarChart3, label: "Analyses IA" },
     { href: "/dashboard/etudiant/chat", icon: MessageSquare, label: "Assistant StatAi" },
   ],
 };
